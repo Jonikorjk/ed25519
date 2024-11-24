@@ -8,9 +8,12 @@
 import Clibsodium
 
 extension Ed25519.CoreWrapper.Core {
+    /// Q = G * k
+    ///
     /// Calculates the point without clamping the scalar.
+    ///
     /// # Parameters
-    /// - scalar - scalar bytes in the big-endian order.
+    /// - scalar - scalar bytes in the little-endian order.
     /// # Output
     /// Returns the point bytes in little-endian order.
     static func basePointMulScalarNoclamp(_ scalar: [UInt8]) throws -> [UInt8] {
@@ -31,6 +34,14 @@ extension Ed25519.CoreWrapper.Core {
         return q
     }
 
+    /// Q = G * k
+    ///
+    /// Calculates the point with clamping the scalar.
+    ///
+    /// # Parameters
+    /// - scalar - scalar bytes in the little-endian order.
+    /// # Output
+    /// Returns the point bytes in little-endian order.
     static func basePointMulScalar(_ scalar: [UInt8]) throws -> [UInt8] {
         var scalar = scalar
         padEndZerosIfNeeded(elem: &scalar)
@@ -50,6 +61,16 @@ extension Ed25519.CoreWrapper.Core {
 
     }
 
+    /// R = P + Q
+    ///
+    /// Adds two points.
+    ///
+    /// # Parameters
+    /// - p - little-endian bytes point representation
+    /// - q - little-endian bytes point representation
+    ///
+    /// # Output
+    /// Returns the point bytes in little-endian order.
     static func addPoints(_ p: [UInt8], _ q: [UInt8]) throws -> [UInt8] {
         var p = p
         var q = q
@@ -75,6 +96,17 @@ extension Ed25519.CoreWrapper.Core {
         return r
     }
 
+
+    /// R = P - Q
+    ///
+    /// Subtracts two points.
+    ///
+    /// # Parameters
+    /// - p - little-endian bytes point representation
+    /// - q - little-endian bytes point representation
+    ///
+    /// # Output
+    /// Returns the point bytes in little-endian order.
     static func subPoints(_ p: [UInt8], _ q: [UInt8]) throws -> [UInt8] {
         var p = p
         var q = q
@@ -86,7 +118,7 @@ extension Ed25519.CoreWrapper.Core {
             throw Ed25519WrapperError.invalidPointLenth(length: [p.count, q.count])
         }
 
-        var r = [UInt8].init(repeating: 0, count: 32)
+        var r = [UInt8](repeating: 0, count: 32)
         crypto_core_ed25519_sub(&r, p, q)
 
         if r.count != 32 {
@@ -100,6 +132,7 @@ extension Ed25519.CoreWrapper.Core {
         return r
     }
 
+    /// Checks point is valid ed25519 point. 
     static func isValidPoint(_ p: [UInt8]) throws -> Bool {
         var p = p
 
